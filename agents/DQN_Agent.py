@@ -2,7 +2,7 @@ from MemoryBuffer import  Memory_Buffer
 from tensorflow import keras
 import numpy as np
 class DQN_Agent():
-	def __init__(self,QNet,action_space,gamma=0.95,epsilon=1,epsilon_min=0.01,epsilon_decay=0.995,memory_size = 2000,memory_batch_size = 32,target_model_update_iters = 350):
+	def __init__(self,QNet,action_space,gamma=0.95,epsilon=1,epsilon_min=0.1,epsilon_decay=0.995,memory_size = 2000,memory_batch_size = 32,target_model_update_iters = 1500,learning_steps = 500):
 
 		self.QNet = QNet
 		self.action_space = action_space
@@ -15,6 +15,8 @@ class DQN_Agent():
 		self.target_model = self.QNet.shallow_copy()
 		self.target_model_update_iters = target_model_update_iters
 		self.learn_steps = 0
+		self.learning_Steps = learning_steps
+		self.steps_counter=  0
 
 	def memorize(self,state,action,reward,new_state,done):
 		self.memory.append((state,action,reward,new_state,done))
@@ -25,8 +27,7 @@ class DQN_Agent():
 
 
 	def get_action(self,state):
-		self.epsilon = self.epsilon * self.epsilon_decay
-		self.epsilon = max(self.epsilon,self.epsilon_min)
+
 		if np.random.uniform() < self.epsilon:
 			return self.action_space.sample()
 
@@ -37,8 +38,18 @@ class DQN_Agent():
 
 
 	def learn(self):
-		if not self.memory.enough_samples():
+		# self.steps_counter += 1
+		if not self.memory.enough_samples() :
 			return
+		# if self.steps_counter != self.learning_Steps:
+		# 	return
+
+		self.epsilon = self.epsilon * self.epsilon_decay
+		self.epsilon = max(self.epsilon,self.epsilon_min)
+
+		# self.steps_counter = 0
+		self.learn_steps += 1
+
 		memory_samples = self.memory.sample()
 		# print(memory_samples)
 		states, actions_taken, rewards, new_states, dones = [np.array(l) for l in (zip(*memory_samples))]
@@ -55,7 +66,7 @@ class DQN_Agent():
 			q_states[i,actions_taken[i]] = rewards[i] + self.gamma*np.max(q_next_states[i]) * (1-dones[i])
 
 		self.QNet.train_on_batch(states,q_states)
-		self.learn_steps += 1
+
 
 		if self.learn_steps == self.target_model_update_iters:
 			self.learn_steps = 0
