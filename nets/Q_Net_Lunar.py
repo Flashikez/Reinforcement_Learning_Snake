@@ -17,9 +17,9 @@ class Q_Net(Net_Base):
 		model = tf.keras.Sequential()
 
 		# model.add(keras.layers.Flatten())
-		model.add(keras.layers.Dense(1024,input_shape=state_size, activation='relu'))
+		model.add(keras.layers.Dense(256,input_shape=state_size, activation='relu'))
 		# model.add(keras.layers.Dropout(0.2))
-		model.add(keras.layers.Dense(512, activation='relu'))
+		model.add(keras.layers.Dense(128, activation='relu'))
 		# model.add(keras.layers.Dropout(0.1))
 		# model.add(keras.layers.Dense(128, activation='relu'))
 		model.add(keras.layers.Dense(action_space.n, activation='softmax'))
