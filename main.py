@@ -61,6 +61,9 @@ for episode in range(episodes):
 		agent.save(f"after_{episode}_episodes.h5")
 
 
+with open("file.txt", 'w') as output:
+	for row in episodes_rewards:
+		output.write(f'{row} \n')
 
 	# input()
 	# print(state.shape)
@@ -69,7 +72,7 @@ for episode in range(episodes):
 	# print(processed.shape)
 	# plt.imshow(state[...,0], cmap='gray', vmin=0, vmax=1)
 	# plt.show()
-
+agent.save(f"training_done.h5")
 env.close()
 
 
