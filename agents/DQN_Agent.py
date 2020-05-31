@@ -2,7 +2,7 @@ from MemoryBuffer import  Memory_Buffer
 from tensorflow import keras
 import numpy as np
 class DQN_Agent():
-	def __init__(self,QNet,action_space,gamma=0.95,epsilon=1,epsilon_min=0.1,epsilon_decay=0.995,memory_size = 2000,memory_batch_size = 32,target_model_update_iters = 1500,learning_steps = 500):
+	def __init__(self,QNet,action_space,gamma=0.95,epsilon=1,epsilon_min=0.1,epsilon_decay=1e-5,memory_size = 50000,memory_batch_size = 32,target_model_update_iters = 1500,learning_steps = 500):
 
 		self.QNet = QNet
 		self.action_space = action_space
@@ -10,16 +10,15 @@ class DQN_Agent():
 		self.epsilon = epsilon
 		self.epsilon_min = epsilon_min
 		self.epsilon_decay = epsilon_decay
-		self.memory = Memory_Buffer(memory_size,memory_batch_size = memory_batch_size)
+		self.memory = Memory_Buffer(memory_size)
 		# self.target_model = QNet
 		self.target_model = self.QNet.shallow_copy()
-		self.target_model_update_iters = target_model_update_iters
-		self.learn_steps = 0
-		self.learning_Steps = learning_steps
-		self.steps_counter=  0
+		self.current_steps = 0
+		self.batch_size = memory_batch_size
+		self.target_model_update = target_model_update_iters
 
 	def memorize(self,state,action,reward,new_state,done):
-		self.memory.append((state,action,reward,new_state,done))
+		self.memory.store((state,action,reward,new_state,done))
 
 
 	def update_target_model(self):
@@ -39,38 +38,39 @@ class DQN_Agent():
 
 	def learn(self):
 		# self.steps_counter += 1
-		if not self.memory.enough_samples() :
+		if  self.memory.size() < self.batch_size :
 			return
 		# if self.steps_counter != self.learning_Steps:
 		# 	return
 
-		self.epsilon = self.epsilon * self.epsilon_decay
-		self.epsilon = max(self.epsilon,self.epsilon_min)
-
-		# self.steps_counter = 0
-		self.learn_steps += 1
-
-		memory_samples = self.memory.sample()
-		# print(memory_samples)
-		states, actions_taken, rewards, new_states, dones = [np.array(l) for l in (zip(*memory_samples))]
-		# print(actions_taken.shape)
-		q_states = self.QNet.predict_raw(states)
-		q_next_states = self.target_model.predict_raw(new_states)
+		state, action, reward, next_state, done = self.memory.sample(self.batch_size)
 
 
-		# print(q_states.shape)
-		# print(q_next_states.shape)
-		# input()
-		for i in range(0,len(states)):
-			# print(i)
-			q_states[i,actions_taken[i]] = rewards[i] + self.gamma*np.max(q_next_states[i]) * (1-dones[i])
+		self.current_steps += 1
 
-		self.QNet.train_on_batch(states,q_states)
+		# for state, action, reward, next_state, done in batch:
+		# 	# print(state)
+		# 	state = state[None,...]
+		# 	next_state = next_state[None,...]
+		# 	target = reward
+		# 	if not done:
+		# 		target_predict = self.target_model.predict_raw(next_state)
+		# 		# print(target_predict.shape)
+		# 		# input()
+		# 		target = reward + self.gamma * np.max(target_predict[0])
+		# 	final_target = self.QNet.predict_raw(state)
+		# 	final_target[0][action] = target
+		# 	# print(state.shape)
+		# 	# print(final_target.shape)
+		# 	self.QNet.train_on_batch(state, final_target)
 
 
-		if self.learn_steps == self.target_model_update_iters:
-			self.learn_steps = 0
+		if self.current_steps == self.target_model_update:
 			self.update_target_model()
+			self.current_steps = 0
+
+		if self.epsilon > self.epsilon_min:
+			self.epsilon -= self.epsilon_decay
 
 	def save(self,path):
 		self.QNet.save_model(path)

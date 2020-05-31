@@ -32,5 +32,6 @@ class Net_Base():
 	def predict_action(self, input_batch):
 		probs = self.model.predict(input_batch)
 		return np.argmax(probs)
+
 	def predict_raw(self,input_batch):
 		return self.model.predict(input_batch)

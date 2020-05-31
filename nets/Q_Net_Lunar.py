@@ -16,13 +16,19 @@ class Q_Net(Net_Base):
 	def make_model(self,state_size,action_space,optimizer):
 		model = tf.keras.Sequential()
 
-		# model.add(keras.layers.Flatten())
-		model.add(keras.layers.Dense(256,input_shape=state_size, activation='relu'))
-		# model.add(keras.layers.Dropout(0.2))
-		model.add(keras.layers.Dense(128, activation='relu'))
-		# model.add(keras.layers.Dropout(0.1))
-		# model.add(keras.layers.Dense(128, activation='relu'))
+		model.add(
+			keras.layers.Conv2D(filters=64, kernel_size=4, padding='same', activation='relu',
+								input_shape=state_size))
+		model.add(keras.layers.MaxPooling2D(pool_size=2))
+
+
+		model.add(keras.layers.Conv2D(filters=128, kernel_size=2, padding='same', activation='relu'))
+		model.add(keras.layers.MaxPooling2D(pool_size=2))
+
+		model.add(keras.layers.Flatten())
+		model.add(keras.layers.Dense(64, activation='relu'))
 		model.add(keras.layers.Dense(action_space.n, activation='softmax'))
+
 		model.compile(optimizer=optimizer, loss='mse')
 
 		return model
