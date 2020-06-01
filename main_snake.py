@@ -23,13 +23,13 @@ def make_model( state_size, action_space, optimizer):
 
 	model.add(keras.layers.Flatten())
 	# model.add(keras.layers.Dense(64, activation='relu'))
-	model.add(keras.layers.Dense(action_space, activation='softmax'))
+	model.add(keras.layers.Dense(action_space))
 
 	model.compile(optimizer=optimizer, loss='mse')
 	return model
 # 
 #
-episodes = 10000
+episodes = 20000
 save_every_nth_episode = 800
 
 game_grid_size = (10,10)
