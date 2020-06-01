@@ -74,6 +74,7 @@ class Snake_Env(gym.Env):
 				self.snake.put_end(old_head_pos)
 
 			self.grid.place_tile(new_head_pos, self.grid.HEAD_VALUE)
+			reward = -0.1
 			# self.grid.place_tile(old_head_pos, self.grid.BODY_VALUE)
 		self.last_action = action
 		# print('AFter action')

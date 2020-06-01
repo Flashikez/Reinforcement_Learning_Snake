@@ -33,13 +33,13 @@ episodes = 20000
 save_every_nth_episode = 800
 
 game_grid_size = (10,10)
-env = Snake_Env(grid_size=game_grid_size,unit_scale = 5, state_as_image = True,food_reward = 10,gameover_reward = -1)
+env = Snake_Env(grid_size=game_grid_size,unit_scale = 2, state_as_image = True,food_reward = 10,gameover_reward = -10)
 state_shape = env.observation_shape
-agent = AgentDQN(0.99, env.action_space.n, make_model(state_shape,env.action_space.n,keras.optimizers.Adam(lr=0.001)),
+agent = AgentDQN(0.97, env.action_space.n, make_model(state_shape,env.action_space.n,keras.optimizers.Adam(lr=0.001)),
                      ExperienceReplay(50000, state_shape), update_steps = 1000,
                      batch_size = 32)
 
-trainings.train_agent(env,agent,episodes,save_every_nth_episode,'trainings/exp_1/')
+trainings.train_agent(env,agent,episodes,save_every_nth_episode,'../drive/My Drive/trainings/exp_1/')
 
 def make_model( state_size, action_space, optimizer):
 	model = tf.keras.Sequential()
